@@ -21,7 +21,13 @@ fun main() {
 
     val sumOfDifferences = list1.zip(list2).sumOf { (a, b) -> abs(b - a) }
 
-    println("Sum of differences: $sumOfDifferences")
+    println("Part 1: $sumOfDifferences")
+
+    val productSum = list1.distinct().sumOf { number ->
+        number * list2.count { it == number }
+    }
+
+    println("Part 2: $productSum")
 
     // part 1: 2192892
 }
