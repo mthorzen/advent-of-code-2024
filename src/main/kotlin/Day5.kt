@@ -40,6 +40,23 @@ fun main() {
         return true
     }
 
+    fun sortCorrectly(orderingRules: List<Pair<Int, Int>>, update: List<Int>) : List<Int> {
+        val sortedUpdate = update.toMutableList()
+        do {
+            var madeChange = false
+            for ((x, y) in orderingRules) {
+                val indexX = sortedUpdate.indexOf(x)
+                val indexY = sortedUpdate.indexOf(y)
+                if (indexX != -1 && indexY != -1 && indexX > indexY) {
+                    sortedUpdate.removeAt(indexX)
+                    sortedUpdate.add(indexY, x)
+                    madeChange = true
+                }
+            }
+        } while (madeChange)
+        return sortedUpdate
+    }
+
     // Parse input
     val (orderingRules, updates) = parseInput(fileContent)
 
@@ -48,7 +65,18 @@ fun main() {
         .filter { update -> isCorrectOrder(orderingRules, update) }
         .sumOf { it[it.size / 2] }
 
-    // first try: 4609 (correct)
-    println("Sum of middle page numbers: $sumOfMiddlePages")
+    // Process each update and sum the middle values of the incorrectly ordered ones
+    val sumOfMiddlePagesIncorrectlyOrdered = updates
+        .filter { update -> !isCorrectOrder(orderingRules, update) }
+        .map { update -> sortCorrectly(orderingRules, update) }
+        .sumOf { it[it.size / 2] }
+
+    // Part 1: first try: 4609 (correct)
+    println("Part 1 - Sum of middle page numbers: $sumOfMiddlePages")
+
+    // Part 2: first try: 5723 (correct)
+    println("Part 2 - Sum of middle page numbers: $sumOfMiddlePagesIncorrectlyOrdered")
 
 }
+
+
