@@ -15,9 +15,12 @@ fun findTrails(map: List<List<Int>>): List<Trail> {
     fun dfs(startPos: String, x: Int, y: Int, path: List<Pair<Int, Int>>) {
         if (map[x][y] == 9) {
             val newPath = path + Pair(x, y)
-            if (!hasDuplicateTrail(startPos, newPath.last())) {
+            // part 1
+            /*if (!hasDuplicateTrail(startPos, newPath.last())) {
                 trails.add(Trail(startPos, newPath))
-            }
+            }*/
+            // part 2
+            trails.add(Trail(startPos, newPath))
             return
         }
 
@@ -58,6 +61,7 @@ fun main() {
     val trails = findTrails(map)
 
     // Part 1 first try: 514 (correct)
+    // part 2 first try: 1162 (correct)
     trails.forEach { trail -> println(trail) }
     println("Sum: " + trails.size)
 }
