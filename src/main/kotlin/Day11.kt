@@ -1,5 +1,8 @@
 package com.nordoba
 
+import java.math.BigDecimal
+import java.math.BigInteger
+
 fun main() {
     println("Day 11!")
 
@@ -9,58 +12,78 @@ fun main() {
 
 
     // Number of blinks (set your desired value here)
-    val numberOfBlinks = 25
+    val numberOfBlinks = 75
 
     // Compute the number of stones after X blinks
     val finalStoneCount = calculateStonesAfterBlinks(initialLine, numberOfBlinks)
 
     // Output the result
     // part 1 first try: 207683 (correct)
+    // part 2 : 244782991106220 (correct)
     println("Number of stones after $numberOfBlinks blinks: $finalStoneCount")
 }
+fun calculateStonesAfterBlinks(initialLine: List<Long>, blinks: Int): BigInteger {
+    // Replace counts with BigDecimal for safer accumulation
+    var stoneCounts = initialLine.map { it.toBigInteger() }
+        .groupingBy { it }
+        .eachCount()
+        .mapValues { it.value.toBigDecimal() } // Convert count to BigDecimal
+        .toMutableMap()
 
-fun calculateStonesAfterBlinks(initialLine: List<Long>, blinks: Int): Int {
-    // Start with the initial line of stones
-    var stones = initialLine.toMutableList()
+    repeat(blinks) { blink ->
+        println("Blink $blink: Total stones = ${stoneCounts.values.fold(BigDecimal.ZERO, BigDecimal::add)}")
+        val newStoneCounts = mutableMapOf<BigInteger, BigDecimal>()
 
-    // Process the stones for the given number of blinks
-    repeat(blinks) {
-        val newStones = mutableListOf<Long>()
-        for (stone in stones) {
+        for ((stone, count) in stoneCounts) {
             when {
-                stone == 0L -> {
+                stone == BigInteger.ZERO -> {
                     // Rule 1: Replace 0 with 1
-                    newStones.add(1)
+                    newStoneCounts[BigInteger.ONE] =
+                        newStoneCounts.getOrDefault(BigInteger.ONE, BigDecimal.ZERO).add(count)
                 }
                 hasEvenDigits(stone) -> {
-                    // Rule 2: Split the stone into two stones
+                    // Rule 2: Split the stone into two parts
                     val parts = splitStone(stone)
-                    newStones.addAll(parts)
+                    for (part in parts) {
+                        newStoneCounts[part] =
+                            newStoneCounts.getOrDefault(part, BigDecimal.ZERO).add(count)
+                    }
                 }
                 else -> {
                     // Rule 3: Multiply the stone by 2024
-                    newStones.add(stone * 2024)
+                    val newStone = stone * BigInteger.valueOf(2024)
+                    newStoneCounts[newStone] =
+                        newStoneCounts.getOrDefault(newStone, BigDecimal.ZERO).add(count)
                 }
             }
         }
-        stones = newStones
+
+        // Detect any negative numbers in the counts
+        for ((stone, count) in newStoneCounts) {
+            require(count >= BigDecimal.ZERO) {
+                "Error: Negative count detected for stone $stone after computations -> $count"
+            }
+        }
+        stoneCounts = newStoneCounts
     }
-    // Return the total number of stones after processing
-    return stones.size
+
+    // Sum up all counts to get the number of stones after the given number of blinks
+    return stoneCounts.values.fold(BigDecimal.ZERO, BigDecimal::add).toBigInteger()
 }
 
-fun hasEvenDigits(number: Long): Boolean {
-    return number.toString().length % 2 == 0
-}
+fun splitStone(number: BigInteger): List<BigInteger> {
+    if (number < BigInteger.TEN) return listOf(number)
 
-fun splitStone(number: Long): List<Long> {
     val numberStr = number.toString()
     val len = numberStr.length
     val mid = len / 2
 
-    // Split the number into two halves
-    val left = numberStr.substring(0, mid).toLong()
-    val right = numberStr.substring(mid, len).toLong()
+    val left = numberStr.substring(0, mid).toBigInteger()
+    val right = numberStr.substring(mid, len).toBigInteger()
 
     return listOf(left, right)
+}
+
+fun hasEvenDigits(number: BigInteger): Boolean {
+    return number.toString().length % 2 == 0
 }
